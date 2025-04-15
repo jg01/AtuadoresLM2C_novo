@@ -309,3 +309,63 @@ void sensorIndutivoSimultaneo(AccelStepper* motor1, AccelStepper* motor2) {
 
 }
 
+void iniciarMovimento(MotorStatus& m) {
+    if (!m.motor) return; // Verifica se o ponteiro do motor é válido
+    
+    m.motor->setMaxSpeed(abs(m.velocidadeMaxima));  // Define a velocidade máxima
+    m.motor->setAcceleration(5000);  // Define a aceleração
+    m.motor->moveTo(m.distancia);  // Define a posição para o motor ir
+
+    m.motor->enableOutputs();  // Habilita o motor para movimento
+
+    m.emMovimento = true;  // Marca o motor como em movimento
+
+    // Enquanto o motor não chegar à posição desejada
+    while (m.motor->distanceToGo() != 0) {
+        m.motor->run();  // Executa o movimento do motor
+    }
+
+    m.motor->stop();  // Para o motor quando a posição for alcançada
+    m.emMovimento = false;  // Marca o motor como parado
+    m.motor->disableOutputs();  // Desabilita o motor após o movimento
+}
+
+// Função para processar os comandos recebidos via Serial
+void processarComando(String comando) {
+    if (!comando.startsWith("T") || !comando.endsWith("#")) return;
+
+    // Remove o T inicial e o # final
+    comando = comando.substring(1, comando.length() - 1);
+
+    int s1 = comando.indexOf(';');
+    int s2 = comando.indexOf(';', s1 + 1);
+    int s3 = comando.indexOf(';', s2 + 1);
+
+    if (s1 == -1 || s2 == -1 || s3 == -1) return;
+
+    long pulsos = comando.substring(0, s1).toInt();
+    int velocidade = comando.substring(s1 + 1, s2).toInt();
+    String direcaoStr = comando.substring(s2 + 1, s3);
+    String mover = comando.substring(s3 + 1);
+
+    int direcao = (direcaoStr == "B") ? 1 : -1;
+
+    // Motor 1 ou 2?
+    if (comando.indexOf("M1") != -1) {
+        m1.distancia = pulsos;
+        m1.velocidadeMaxima = velocidade;
+        m1.direcao = direcao;
+
+        if (mover == "H" && !m1.emMovimento) {
+            iniciarMovimento(m1);
+        }
+    } else if (comando.indexOf("M2") != -1) {
+        m2.distancia = pulsos;
+        m2.velocidadeMaxima = velocidade;
+        m2.direcao = direcao;
+
+        if (mover == "H" && !m2.emMovimento) {
+            iniciarMovimento(m2);
+        }
+    }
+}

@@ -36,4 +36,20 @@ void calibracao();
 
 void subsidencia(AccelStepper* motor, int velocidadeMaxima, int aceleracao, long distancia);
 
+// Estrutura para controlar o estado do motor
+struct MotorStatus {
+    AccelStepper* motor;
+    bool emMovimento = false;
+    long distancia = 0;
+    int velocidadeMaxima = 0;
+    int direcao = 0;
+};
+
+// Função para iniciar movimento do motor
+void iniciarMovimento(MotorStatus& m);
+
+// Função para processar os comandos recebidos via Serial
+void processarComando(String comando);
+
+
 #endif
