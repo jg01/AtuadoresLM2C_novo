@@ -8,3 +8,4 @@ bool emMovimento1 = false;
 bool emMovimento2 = false;
 bool emMovimentoSimultaneo = false;
 bool emMovimentoFalha = false;
+int limiarSensor = 512;
